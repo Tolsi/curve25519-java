@@ -1,0 +1,30 @@
+name: Build Native Images
+on: [push]
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build macOS Library
+        run: |
+          mkdir jni/build
+          cd jni/build
+          cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
+      - uses: actions/upload-artifact@v2
+        with:
+          name: macos-image
+          path: jni/build/libcurve25519.dylib
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Linux Library
+        run: |
+          mkdir jni/build
+          cd jni/build
+          cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
+      - uses: actions/upload-artifact@v2
+        with:
+          name: linux-image
+          path: jni/build/libcurve25519.so
