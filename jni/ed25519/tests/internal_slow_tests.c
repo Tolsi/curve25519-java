@@ -12,7 +12,7 @@
 #include "internal_slow_tests.h"
 #include <assert.h>
 
-
+#define MSG_LEN 200
 #define ERROR(...) do {if (!silent) { printf(__VA_ARGS__); abort(); } else return -1; } while (0)
 #define INFO(...) do {if (!silent) printf(__VA_ARGS__);} while (0)
 
@@ -42,8 +42,7 @@ int curvesigs_slow_test(int silent, int iterations)
   0x38, 0x02, 0xf8, 0x28, 0x28, 0xc5, 0x65, 0x05,
   };
 
-  int count;  
-  const int MSG_LEN  = 200;
+  int count;
   unsigned char privkey[32];
   unsigned char pubkey[32];
   unsigned char signature[64];
@@ -109,8 +108,7 @@ int xeddsa_slow_test(int silent, int iterations)
   0x9d, 0xe8, 0x7a, 0x5b, 0xd8, 0x49, 0x7b, 0x05, 
   };
 
-  int count;  
-  const int MSG_LEN  = 200;
+  int count;
   unsigned char privkey[32];
   unsigned char pubkey[32];
   unsigned char signature[96];
@@ -176,8 +174,7 @@ int xeddsa_to_curvesigs_slow_test(int silent, int iterations)
   
   };
 
-  int count;  
-  const int MSG_LEN  = 200;
+  int count;
   unsigned char privkey[32];
   unsigned char pubkey[32];
   unsigned char signature[96];
@@ -293,8 +290,7 @@ int generalized_xveddsa_slow_test(int silent, int iterations)
   };
   */
 
-  int count;  
-  const int MSG_LEN  = 200;
+  int count;
   unsigned char privkey[32];
   unsigned char pubkey[32];
   unsigned char signature[96];

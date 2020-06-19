@@ -6,6 +6,12 @@
 
 package org.whispersystems.curve25519;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
 class NativeCurve25519Provider implements Curve25519Provider {
 
     private static boolean libraryPresent = false;
@@ -15,9 +21,14 @@ class NativeCurve25519Provider implements Curve25519Provider {
         try {
             System.loadLibrary("curve25519");
             libraryPresent = true;
-        } catch (UnsatisfiedLinkError | SecurityException e) {
-            libraryPresent = false;
-            libraryFailedException = e;
+        } catch (UnsatisfiedLinkError | SecurityException outer) {
+            try {
+                loadFromJar();
+                libraryPresent = true;
+            } catch (UnsatisfiedLinkError | SecurityException inner) {
+                libraryFailedException = inner.initCause(outer);
+                libraryPresent = false;
+            }
         }
     }
 
@@ -81,4 +92,30 @@ class NativeCurve25519Provider implements Curve25519Provider {
 
     private native boolean smokeCheck(int dummy);
 
+    private static void loadFromJar() {
+        String os = System.getProperty("os.name").toLowerCase();
+        String path;
+        if (os.contains("win")) {
+            path = "/native/curve25519.dll";
+        } else if (os.contains("mac")) {
+            path = "/native/libcurve25519.dylib";
+        } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+            path = "/native/libcurve25519.so";
+        } else {
+            throw new UnsatisfiedLinkError("Can't find library for " + os);
+        }
+
+        try (InputStream in = NativeCurve25519Provider.class.getResourceAsStream(path)) {
+            if (in == null) {
+                throw new UnsatisfiedLinkError("Can't find library for " + os);
+            }
+            Path fileOut = Files.createTempFile("curve25519", Long.toString(System.nanoTime()));
+            Files.copy(in, fileOut, StandardCopyOption.REPLACE_EXISTING);
+            System.load(fileOut.toFile().getAbsolutePath());
+            Files.delete(fileOut);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new UnsatisfiedLinkError();
+        }
+    }
 }

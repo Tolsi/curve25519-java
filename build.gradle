@@ -1,4 +1,23 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.2"
+    }
+}
+
 subprojects {
-    ext.version_number = "0.6.3"
+    ext.version_number = "0.6.4"
     ext.group_info = "com.wavesplatform"
+}
+
+apply plugin: 'io.codearte.nexus-staging'
+
+nexusStaging {
+    packageGroup = "com.wavesplatform"
+    username = whisperSonatypeUsername
+    password = whisperSonatypePassword
+    numberOfRetries = 100
+    delayBetweenRetriesInMillis = 5000
 }
