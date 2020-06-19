@@ -112,7 +112,7 @@ class NativeCurve25519Provider implements Curve25519Provider {
             Path fileOut = Files.createTempFile("curve25519", Long.toString(System.nanoTime()));
             Files.copy(in, fileOut, StandardCopyOption.REPLACE_EXISTING);
             System.load(fileOut.toFile().getAbsolutePath());
-            Files.delete(fileOut);
+            fileOut.toFile().deleteOnExit();
         } catch (IOException e) {
             e.printStackTrace();
             throw new UnsatisfiedLinkError();
