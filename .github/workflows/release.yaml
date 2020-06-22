@@ -55,7 +55,6 @@ jobs:
         run: |
           mkdir jni/build
           cd jni/build
-          cat ../CMakeLists.txt
           cmake -DCMAKE_BUILD_TYPE=Release ..
           cmake --build .
           cd ..
