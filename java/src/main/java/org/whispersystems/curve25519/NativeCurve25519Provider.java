@@ -94,15 +94,16 @@ class NativeCurve25519Provider implements Curve25519Provider {
 
     private static void loadFromJar() {
         String os = System.getProperty("os.name").toLowerCase();
+        boolean is64 = System.getProperty("os.arch").contains("64");
         String path;
         if (os.contains("win")) {
-            path = "/native/curve25519.dll";
-        } else if (os.contains("mac")) {
-            path = "/native/libcurve25519.dylib";
+            path = is64 ? "/native/libcurve25519.x86-64.dll" : "/native/libcurve25519.x86.dll";
+        } else if (os.contains("mac") && is64) {
+            path = "/native/libcurve25519.x86-64.dylib";
         } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
-            path = "/native/libcurve25519.so";
+            path = is64 ? "/native/libcurve25519.x86-64.so" : "/native/libcurve25519.x86.so";
         } else {
-            throw new UnsatisfiedLinkError("Can't find library for " + os);
+            throw new UnsatisfiedLinkError("Can't find library for os: " + os + " and arch: " + System.getProperty("os.arch"));
         }
 
         try (InputStream in = NativeCurve25519Provider.class.getResourceAsStream(path)) {
