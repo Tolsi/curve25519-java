@@ -6,12 +6,6 @@
 
 package org.whispersystems.curve25519;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-
 class NativeCurve25519Provider implements Curve25519Provider {
 
     private static boolean libraryPresent = false;
@@ -19,17 +13,11 @@ class NativeCurve25519Provider implements Curve25519Provider {
 
     static {
         try {
-            System.loadLibrary("curve25519");
+            NativeLibraryLoader.loadLibrary("curve25519", NativeCurve25519Provider.class);
             libraryPresent = true;
-        } catch (UnsatisfiedLinkError | SecurityException outer) {
-            try {
-                loadFromJar();
-                libraryPresent = true;
-            } catch (UnsatisfiedLinkError | SecurityException inner) {
-                if (inner.getCause() == null) inner.initCause(outer);
-                libraryFailedException = inner;
-                libraryPresent = false;
-            }
+        } catch (UnsatisfiedLinkError | SecurityException e) {
+            libraryPresent = false;
+            libraryFailedException = e;
         }
     }
 
@@ -93,33 +81,4 @@ class NativeCurve25519Provider implements Curve25519Provider {
 
     private native boolean smokeCheck(int dummy);
 
-    private static void loadFromJar() {
-        String os = System.getProperty("os.name").toLowerCase();
-        String arch = System.getProperty("os.arch");
-        boolean is64 = arch.contains("64");
-        String path;
-        if (os.contains("win")) {
-            path = is64 ? "/native/libcurve25519.x86-64.dll" : "/native/libcurve25519.x86.dll";
-        } else if (os.contains("mac") && is64) {
-            path = "/native/libcurve25519.x86-64.dylib";
-        } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
-            path = is64 ? "/native/libcurve25519.x86-64.so" : "/native/libcurve25519.x86.so";
-        } else if (os.contains("arm") && is64) {
-            path = "/native/libcurve25519.arm64.so";
-        } else {
-            throw new UnsatisfiedLinkError("Can't find library for os: " + os + " and arch: " + arch);
-        }
-
-        try (InputStream in = NativeCurve25519Provider.class.getResourceAsStream(path)) {
-            if (in == null) {
-                throw new UnsatisfiedLinkError("Can't find library for os: " + os + " and arch: " + arch);
-            }
-            Path fileOut = Files.createTempFile("curve25519", Long.toString(System.nanoTime()));
-            Files.copy(in, fileOut, StandardCopyOption.REPLACE_EXISTING);
-            System.load(fileOut.toFile().getAbsolutePath());
-            fileOut.toFile().deleteOnExit();
-        } catch (IOException e) {
-            throw (UnsatisfiedLinkError) new UnsatisfiedLinkError("Error occurred during native library loading").initCause(e);
-        }
-    }
 }
