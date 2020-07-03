@@ -49,30 +49,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Prepare toolchain
+        run: |
+          touch jni/current.toolchain
       - name: Prepare linux x86
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.arch == 'x86' }}
         run: |
-          echo 'set_target_properties(curve25519-donna PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")' >> jni/CMakeLists.txt
-          echo 'set_target_properties(curve25519-ref10 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")' >> jni/CMakeLists.txt
-          echo 'set_target_properties(curve25519 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")' >> jni/CMakeLists.txt
-          sudo apt-get install -y gcc-multilib
+          cat jni/toolchains/linux-x86.toolchain > jni/current.toolchain
+          sudo apt-get install -y gcc-multilib g++-multilib
       - name: Prepare windows x86
         if: ${{ matrix.os == 'windows-latest' && matrix.arch == 'x86' }}
         run: |
-          echo 'set_target_properties(curve25519-donna PROPERTIES CMAKE_GENERATOR_PLATFORM Win32)' >> jni/CMakeLists.txt
-          echo 'set_target_properties(curve25519-ref10 PROPERTIES CMAKE_GENERATOR_PLATFORM Win32)' >> jni/CMakeLists.txt
-          echo 'set_target_properties(curve25519 PROPERTIES CMAKE_GENERATOR_PLATFORM Win32)' >> jni/CMakeLists.txt
+          cat jni/toolchains/windows-x86.toolchain > jni/current.toolchain
       - name: Prepare linux arm64
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.arch == 'aarch64' }}
         run: |
-          echo "set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)" >> jni/CMakeLists.txt
-          echo "set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)" >> jni/CMakeLists.txt
+          cat jni/toolchains/linux-aarch64.toolchain > jni/current.toolchain
           sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
       - name: Build native
         run: |
           mkdir jni/build
           cd jni/build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake -DCMAKE_TOOLCHAIN_FILE=../current.toolchain -DCMAKE_BUILD_TYPE=Release ..
           cmake --build .
           cd ..
           mkdir -p native/${{ matrix.platform }}${{ matrix.bit-model }}/${{ matrix.arch }}
@@ -104,9 +102,11 @@ jobs:
           mkdir -p java/src/main/resources/META-INF/
           cp -r native java/src/main/resources/META-INF/
       - name: Stage
+        env:
+          SONATYPE_REPO: https://oss.sonatype.org/service/local/staging/deploy/maven2
         run:
           ./gradlew uploadArchives
-            -PsonatypeRepo=${{ secrets.SONATYPE_REPO }}
+            -PsonatypeRepo=$SONATYPE_REPO
             -PwhisperSonatypeUsername=${{ secrets.SONATYPE_USERNAME }}
             -PwhisperSonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
             -Psigning.secretKeyRingFile=../secret.gpg
@@ -115,12 +115,12 @@ jobs:
       - name: Release
         run:
           ./gradlew closeAndReleaseRepository
-             -PsonatypeRepo=
-             -PwhisperSonatypeUsername=${{ secrets.SONATYPE_USERNAME }}
-             -PwhisperSonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
-             -Psigning.secretKeyRingFile=
-             -Psigning.keyId=
-             -Psigning.password=
+            -PsonatypeRepo=
+            -PwhisperSonatypeUsername=${{ secrets.SONATYPE_USERNAME }}
+            -PwhisperSonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
+            -Psigning.secretKeyRingFile=
+            -Psigning.keyId=
+            -Psigning.password=
       - uses: actions/upload-artifact@v2
         with:
           name: released
