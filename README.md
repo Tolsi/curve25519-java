@@ -14,8 +14,8 @@ Just use Gradle, for example `gradle compileJava` or `gradle jar` to build jar.
 Call it from the root of project:
 
 ```
-mkdir jni/build
-cd jni/build
+mkdir native/build
+cd native/build
 cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
 ```
 
@@ -30,7 +30,7 @@ To run it call ```gradle jmh```
 The caller needs to specify a `provider` when obtaining a Curve25519 instance.  There are
 four built in providers:
 
-1. `Curve25519.NATIVE` -- This is a JNI backed provider.
+1. `Curve25519.NATIVE` -- This is a JNA backed provider.
 1. `Curve25519.JAVA` -- This is a pure Java 7 backed provider.
 1. `Curve25519.J2ME` -- This is a J2ME compatible provider.
 1. `Curve25519.BEST` -- This is a provider that attempts to use `NATIVE`,
