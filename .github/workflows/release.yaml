@@ -109,7 +109,7 @@ jobs:
           java-version: 1.8
       - name: Prepare to build
         run: |
-          echo '${{ secrets.GPG_KEY_CONTENTS }}' | base64 -d > publish_key.gpg
+          echo '${{ secrets.GPG_KEY }}' | base64 -d > publish_key.gpg
           gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.SECRET_PASSPHRASE }}" --output secret.gpg publish_key.gpg
           mkdir -p java/src/main/resources
           cp -r libs/* java/src/main/resources/
