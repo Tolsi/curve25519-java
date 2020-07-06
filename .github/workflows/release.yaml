@@ -27,7 +27,7 @@ jobs:
             compiled-path: libcurve25519.dylib
             platform: osx
           - os: windows-latest
-            compiled-path: Debug/curve25519.dll
+            compiled-path: Release/curve25519.dll
             platform: windows
           - os: ubuntu-latest
             arch: x86
@@ -71,7 +71,7 @@ jobs:
           mkdir jni/build
           cd jni/build
           cmake -DCMAKE_TOOLCHAIN_FILE=../current.toolchain -DCMAKE_BUILD_TYPE=Release ..
-          cmake --build .
+          cmake --build . --config Release
           cd ..
           mkdir -p native/${{ matrix.platform }}${{ matrix.bit-model }}/${{ matrix.arch }}
           mv build/${{ matrix.compiled-path }} ./native/${{ matrix.platform }}${{ matrix.bit-model }}/${{ matrix.arch }}/
