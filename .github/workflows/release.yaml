@@ -129,8 +129,8 @@ jobs:
 #        run:
 #          ./gradlew closeAndReleaseRepository
 #            -PsonatypeRepo=
-#            -PwhisperSonatypeUsername=${{ secrets.SONATYPE_USERNAME }}
-#            -PwhisperSonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
+#            -PwhisperSonatypeUsername="${{ secrets.SONATYPE_USERNAME }}"
+#            -PwhisperSonatypePassword="${{ secrets.SONATYPE_PASSWORD }}"
 #            -Psigning.secretKeyRingFile=
 #            -Psigning.keyId=
 #            -Psigning.password=

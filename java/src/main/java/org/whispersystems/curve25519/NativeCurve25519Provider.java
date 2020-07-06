@@ -16,7 +16,6 @@ public class NativeCurve25519Provider implements Curve25519Provider {
         } catch (UnsatisfiedLinkError | SecurityException e) {
             library = null;
             libraryFailedException = e;
-            e.printStackTrace();
         }
     }
 
@@ -26,7 +25,6 @@ public class NativeCurve25519Provider implements Curve25519Provider {
         try {
             library.smokeCheck(31337);
         } catch (UnsatisfiedLinkError ule) {
-            ule.printStackTrace();
             throw new NoSuchProviderException(ule);
         }
     }
