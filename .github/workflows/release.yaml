@@ -113,6 +113,24 @@ jobs:
           gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.SECRET_PASSPHRASE }}" --output secret.gpg publish_key.gpg
           mkdir -p java/src/main/resources
           cp -r libs/* java/src/main/resources/
+
+          ls -lah ../
+          ls -lah .
+
+          username="${{ secrets.SONATYPE_USERNAME }}"
+          usernameSize=${#username}
+          password="${{ secrets.SONATYPE_PASSWORD }}"
+          passwordSize=${#password}
+          signingKey="${{ secrets.SIGNING_KEY_ID }}"
+          signingKeySize=${#signingKey}
+          signingPassword="${{ secrets.SIGNING_PASSWORD }}"
+          signingPasswordSize=${#signingPassword}
+
+          echo "$usernameSize"
+          echo "$passwordSize"
+          echo "$signingKeySize"
+          echo "$signingPasswordSize"
+
       - name: Stage
         env:
           SONATYPE_REPO: https://oss.sonatype.org/content/repositories/snapshots
