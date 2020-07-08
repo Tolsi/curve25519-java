@@ -27,6 +27,10 @@ target_sources(curve25519-ref10 PUBLIC ${curve25519-ref10-files})
 
 add_library(curve25519 SHARED curve25519.c)
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    set_target_properties(curve25519 PROPERTIES PREFIX "")
+endif()
+
 target_link_libraries(curve25519 curve25519-ref10 curve25519-donna)
 
 target_include_directories(curve25519 PUBLIC
@@ -34,3 +38,4 @@ target_include_directories(curve25519 PUBLIC
     ed25519/additions/generalized
     ed25519/tests
 )
+

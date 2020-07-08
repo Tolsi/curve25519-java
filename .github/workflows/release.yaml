@@ -9,110 +9,70 @@ on:
 jobs:
   build-native:
     runs-on: ${{ matrix.os }}
+    env:
+      target-path: ${{ matrix.platform }}-${{ matrix.arch }}
     strategy:
       matrix:
-        platform: [linux, windows, macos]
+        platform: [linux, win32, macos]
         arch: [x86, x86-64, aarch64]
         exclude:
           - platform: macos
             arch: x86
           - platform: macos
             arch: aarch64
-          - platform: windows
+          - platform: win32
             arch: aarch64
         include:
           - platform: macos
             os: macos-latest
             compiled-path: libcurve25519.dylib
+            target-path: darwin
           - platform: linux
             os: ubuntu-latest
             compiled-path: libcurve25519.so
-          - platform: windows
-            os: ubuntu-latest
-            compiled-path: libcurve25519.dll
-          - platform: macos
-            arch: x86-64
-            target-path: darwin
-          - platform: linux
-            arch: x86
-            target-path: linux-x86
-          - platform: linux
-            arch: x86-64
-            target-path: linux-x86-64
           - platform: linux
             arch: aarch64
-            target-path: linux-aarch64
-          - platform: windows
+            extra-packages: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          - platform: linux
             arch: x86
-            target-path: win32-x86
-          - platform: windows
-            arch: x86-64
-            target-path: win32-x86-64
-
+            extra-packages: gcc-multilib g++-multilib
+          - platform: win32
+            os: ubuntu-latest
+            compiled-path: curve25519.dll
+            extra-packages: mingw-w64
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Prepare toolchain
+      - uses: actions/checkout@v2
+      - name: Install build tools
+        if: ${{ matrix.extra-packages }}
+        run: sudo apt install -y ${{ matrix.extra-packages }}
+      - name: Build native image
         run: |
-          touch native/current.toolchain
-      - name: Prepare linux x86
-        if: ${{ matrix.target-path == 'linux-x86' }}
-        run: |
-          cat native/toolchains/linux-x86.toolchain > native/current.toolchain
-          sudo apt-get install -y gcc-multilib g++-multilib
-      - name: Prepare windows x86
-        if: ${{ matrix.target-path == 'win32-x86'}}
-        run: |
-          cat native/toolchains/windows-x86.toolchain > native/current.toolchain
-          sudo apt-get install -y mingw-w64
-      - name: Prepare windows x86-64
-        if: ${{ matrix.target-path == 'win32-x86-64'}}
-        run: |
-          cat native/toolchains/windows-x86-64.toolchain > native/current.toolchain
-          sudo apt-get install -y mingw-w64
-      - name: Prepare linux aarch64
-        if: ${{ matrix.target-path == 'linux-aarch64'}}
-        run: |
-          cat native/toolchains/linux-aarch64.toolchain > native/current.toolchain
-          sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-      - name: Build native
-        run: |
-          mkdir native/build
+          mkdir -p native/build/target/${{ matrix.target-path || env.target-path }}
           cd native/build
-          cmake -DCMAKE_TOOLCHAIN_FILE=../current.toolchain -DCMAKE_BUILD_TYPE=Release ..
+          cp ../toolchains/${{ matrix.platform }}-${{ matrix.arch }}.toolchain current.toolchain || touch current.toolchain
+          cmake -DCMAKE_TOOLCHAIN_FILE=current.toolchain -DCMAKE_BUILD_TYPE=Release ..
           cmake --build .
-          cd ..
-          mkdir -p libs/${{ matrix.target-path }}
-          mv build/${{ matrix.compiled-path }} ./libs/${{ matrix.target-path }}/
-      - name: Normalize names
-        run: mv ./native/libs/${{ matrix.target-path }}/libcurve25519.dll ./native/libs/${{ matrix.target-path }}/curve25519.dll
-        if: ${{ matrix.platform == 'windows' }}
+          mv ${{ matrix.compiled-path }} target/${{ matrix.target-path || env.target-path }}/
       - name: Upload result
         uses: actions/upload-artifact@v2
         with:
-          name: libs
-          path: native/libs/
+          name: native-images.zip
+          path: native/build/target/*
 
   release:
     runs-on: ubuntu-latest
     needs: build-native
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Download native libs
-        uses: actions/download-artifact@v1
-        with:
-          name: libs
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Prepare to build
-        run: |
+      - uses: actions/checkout@v2
+      - run: |
           echo '${{ secrets.GPG_KEY }}' | base64 -d > publish_key.gpg
           gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.SECRET_PASSPHRASE }}" --output secret.gpg publish_key.gpg
           mkdir -p java/src/main/resources
-          cp -r libs/* java/src/main/resources/
+      - uses: actions/download-artifact@v1
+        with:
+          name: native-images.zip
+          path: java/src/main/resources/
+      - run: ls -R java/src/main/resources/
       - name: Stage
         env:
           SONATYPE_REPO: https://oss.sonatype.org/content/repositories/snapshots
@@ -134,7 +94,4 @@ jobs:
 #            -Psigning.secretKeyRingFile=
 #            -Psigning.keyId=
 #            -Psigning.password=
-      - uses: actions/upload-artifact@v2
-        with:
-          name: released
-          path: java/build/libs
+
