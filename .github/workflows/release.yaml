@@ -65,14 +65,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: |
-          echo '${{ secrets.GPG_KEY }}' | base64 -d > publish_key.gpg
-          gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.SECRET_PASSPHRASE }}" --output secret.gpg publish_key.gpg
+          echo '${{ secrets.OSSRH_GPG_KEY }}' | base64 -d > secret.gpg
           mkdir -p java/src/main/resources
       - uses: actions/download-artifact@v1
         with:
           name: native-images.zip
           path: java/src/main/resources/
-      - run: ls -R java/src/main/resources/
       - name: Stage
         env:
           SONATYPE_REPO: https://oss.sonatype.org/content/repositories/snapshots
@@ -80,11 +78,11 @@ jobs:
         run:
           ./gradlew uploadArchives
             -PsonatypeRepo=$SONATYPE_REPO
-            -PwhisperSonatypeUsername="${{ secrets.SONATYPE_USERNAME }}"
-            -PwhisperSonatypePassword="${{ secrets.SONATYPE_PASSWORD }}"
+            -PwhisperSonatypeUsername="${{ secrets.OSSRH_USERNAME }}"
+            -PwhisperSonatypePassword="${{ secrets.OSSRH_PASSWORD }}"
             -Psigning.secretKeyRingFile=../secret.gpg
-            -Psigning.keyId="${{ secrets.SIGNING_KEY_ID }}"
-            -Psigning.password="${{ secrets.SIGNING_PASSWORD }}"
+            -Psigning.keyId="${{ secrets.OSSRH_GPG_KEY_ID }}"
+            -Psigning.password="${{ secrets.OSSRH_GPG_PASSPHRASE }}"
 #      - name: Release
 #        run:
 #          ./gradlew closeAndReleaseRepository
