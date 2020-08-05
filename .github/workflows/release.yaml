@@ -1,10 +1,10 @@
-name: Release
+name: Publish artfiacts to Sonatype Repo
 
 on:
   push:
     branches: [native-from-jar]
-#    tags:
-#      - v[0-9].[0-9]+.[0-9]+
+    tags:
+      - v[0-9].[0-9]+.[0-9]+
 
 jobs:
   build-native:
@@ -44,7 +44,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install build tools
         if: ${{ matrix.extra-packages }}
-        run: sudo apt install -y ${{ matrix.extra-packages }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.extra-packages }}
       - name: Build native image
         run: |
           mkdir -p native/build/target/${{ matrix.target-path || env.target-path }}
@@ -59,9 +61,14 @@ jobs:
           name: native-images.zip
           path: native/build/target/*
 
-  release:
+  publish:
     runs-on: ubuntu-latest
     needs: build-native
+    env:
+      USERNAME: ${{ secrets.OSSRH_USERNAME }}
+      PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+      GPG_KEY_ID: ${{ secrets.OSSRH_GPG_KEY_ID }}
+      GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_PASSPHRASE }}
     steps:
       - uses: actions/checkout@v2
       - run: |
@@ -71,25 +78,23 @@ jobs:
         with:
           name: native-images.zip
           path: java/src/main/resources/
-      - name: Stage
-        env:
-          SONATYPE_REPO: https://oss.sonatype.org/content/repositories/snapshots
-          # SONATYPE_REPO: https://oss.sonatype.org/service/local/staging/deploy/maven2
-        run:
-          ./gradlew uploadArchives
-            -PsonatypeRepo=$SONATYPE_REPO
-            -PwhisperSonatypeUsername="${{ secrets.OSSRH_USERNAME }}"
-            -PwhisperSonatypePassword="${{ secrets.OSSRH_PASSWORD }}"
-            -Psigning.secretKeyRingFile=../secret.gpg
-            -Psigning.keyId="${{ secrets.OSSRH_GPG_KEY_ID }}"
-            -Psigning.password="${{ secrets.OSSRH_GPG_PASSPHRASE }}"
-#      - name: Release
-#        run:
-#          ./gradlew closeAndReleaseRepository
-#            -PsonatypeRepo=
-#            -PwhisperSonatypeUsername="${{ secrets.SONATYPE_USERNAME }}"
-#            -PwhisperSonatypePassword="${{ secrets.SONATYPE_PASSWORD }}"
-#            -Psigning.secretKeyRingFile=
-#            -Psigning.keyId=
-#            -Psigning.password=
-
+      - name: Publish Snapshot
+        if: ${{ !contains(github.ref, '/tags/') }}
+        run: |
+          ./gradlew -d uploadArchives \
+            -PsonatypeRepo=https://oss.sonatype.org/content/repositories/snapshots \
+            -PwhisperSonatypeUsername="$USERNAME" \
+            -PwhisperSonatypePassword="$PASSWORD" \
+            -Psigning.secretKeyRingFile=../secret.gpg \
+            -Psigning.keyId="$GPG_KEY_ID" \
+            -Psigning.password="$GPG_PASSPHRASE" \
+      - name: Publish Release
+        if: contains(github.ref, '/tags/')
+        run: |
+          ./gradlew closeAndReleaseRepository \
+            -PsonatypeRepo=https://oss.sonatype.org/service/local/staging/deploy/maven2 \
+            -PwhisperSonatypeUsername="$USERNAME" \
+            -PwhisperSonatypePassword="$PASSWORD" \
+            -Psigning.secretKeyRingFile=../secret.gpg \
+            -Psigning.keyId="$GPG_KEY_ID" \
+            -Psigning.password="$GPG_PASSPHRASE"

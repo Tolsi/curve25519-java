@@ -48,7 +48,7 @@ dependencies {
 }
 
 signing {
-    required { hasProperty("release") && gradle.taskGraph.hasTask("uploadArchives") }
+    // required { hasProperty("release") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
 }
 
