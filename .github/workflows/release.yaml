@@ -83,8 +83,8 @@ jobs:
         run: |
           ./gradlew -d uploadArchives \
             -PsonatypeRepo=https://oss.sonatype.org/content/repositories/snapshots \
-            -PwhisperSonatypeUsername='$USERNAME' \
-            -PwhisperSonatypePassword='$PASSWORD' \
+            -PwhisperSonatypeUsername=$USERNAME \
+            -PwhisperSonatypePassword=$PASSWORD \
             -Psigning.secretKeyRingFile=../secret.gpg \
             -Psigning.keyId="$GPG_KEY_ID" \
             -Psigning.password="$GPG_PASSPHRASE" \
@@ -93,8 +93,8 @@ jobs:
         run: |
           ./gradlew closeAndReleaseRepository \
             -PsonatypeRepo=https://oss.sonatype.org/service/local/staging/deploy/maven2 \
-            -PwhisperSonatypeUsername='$USERNAME' \
-            -PwhisperSonatypePassword='$PASSWORD' \
+            -PwhisperSonatypeUsername=$USERNAME \
+            -PwhisperSonatypePassword=$PASSWORD \
             -Psigning.secretKeyRingFile=../secret.gpg \
             -Psigning.keyId="$GPG_KEY_ID" \
             -Psigning.password="$GPG_PASSPHRASE"
