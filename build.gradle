@@ -8,7 +8,7 @@ buildscript {
 }
 
 subprojects {
-    ext.version_number = "0.6.4-N2150-4-SNAPSHOT"
+    ext.version_number = "0.6.4-N2150-TEST-SNAPSHOT"
     ext.group_info = "com.wavesplatform"
 }
 
