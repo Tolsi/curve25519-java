@@ -1,6 +1,5 @@
 package org.whispersystems.curve25519;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
 import junit.framework.TestCase;
 import org.whispersystems.curve25519.java.fe_isequal;
 

@@ -81,7 +81,7 @@ jobs:
       - name: Publish Snapshot
         if: ${{ !contains(github.ref, '/tags/') }}
         run: |
-          ./gradlew -d uploadArchives \
+          ./gradlew uploadArchives \
             -PsonatypeRepo=https://oss.sonatype.org/content/repositories/snapshots \
             -PwhisperSonatypeUsername=$USERNAME \
             -PwhisperSonatypePassword=$PASSWORD \
