@@ -6,7 +6,7 @@
 
 package org.whispersystems.curve25519;
 
-interface Curve25519Provider {
+public interface Curve25519Provider {
 
     static final int PRIVATE_KEY_LEN = 32;
 
