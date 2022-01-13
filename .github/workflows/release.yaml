@@ -25,7 +25,7 @@ jobs:
             compiled-path: libcurve25519.so
           - platform: linux
             arch: aarch64
-            extra-packages: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            extra-packages: gcc-5-aarch64-linux-gnu g++-5-aarch64-linux-gnu
           - platform: linux
             arch: x86
             extra-packages: gcc-5 g++-5 gcc-5-multilib g++-5-multilib
