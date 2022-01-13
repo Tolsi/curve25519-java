@@ -18,19 +18,22 @@ jobs:
             arch: aarch64
         include:
           - platform: darwin
-            os: macos-latest
+            os: macos-10.15
             compiled-path: libcurve25519.dylib
           - platform: linux
-            os: ubuntu-latest
+            os: ubuntu-18.04
             compiled-path: libcurve25519.so
           - platform: linux
             arch: aarch64
             extra-packages: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
           - platform: linux
             arch: x86
-            extra-packages: gcc-multilib g++-multilib
+            extra-packages: gcc-5 g++-5 gcc-5-multilib g++-5-multilib
+          - platform: linux
+            arch: x86-64
+            extra-packages: gcc-5 g++-5
           - platform: win32
-            os: ubuntu-latest
+            os: ubuntu-20.04
             compiled-path: curve25519.dll
             extra-packages: mingw-w64
     steps:
