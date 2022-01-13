@@ -48,15 +48,12 @@ dependencies {
 }
 
 signing {
-    // required { hasProperty("release") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
 }
 
 uploadArchives {
     configuration = configurations.archives
     repositories.mavenDeployer {
-        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
         repository(url: sonatypeRepo) {
             authentication(userName: whisperSonatypeUsername, password: whisperSonatypePassword)
         }
