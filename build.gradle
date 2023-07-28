@@ -16,8 +16,8 @@ apply plugin: 'io.codearte.nexus-staging'
 
 nexusStaging {
     packageGroup = "com.wavesplatform"
-    username = whisperSonatypeUsername
-    password = whisperSonatypePassword
+    username = sonatypeUsername
+    password = sonatypePassword
     numberOfRetries = 100
     delayBetweenRetriesInMillis = 5000
 }
