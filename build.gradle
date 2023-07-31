@@ -8,7 +8,7 @@ buildscript {
 }
 
 subprojects {
-    ext.version_number = "0.6.4"
+    ext.version_number = "0.6.5-SNAPSHOT"
     ext.group_info = "com.wavesplatform"
 }
 
@@ -16,8 +16,8 @@ apply plugin: 'io.codearte.nexus-staging'
 
 nexusStaging {
     packageGroup = "com.wavesplatform"
-    username = whisperSonatypeUsername
-    password = whisperSonatypePassword
+    username = sonatypeUsername
+    password = sonatypePassword
     numberOfRetries = 100
     delayBetweenRetriesInMillis = 5000
 }
