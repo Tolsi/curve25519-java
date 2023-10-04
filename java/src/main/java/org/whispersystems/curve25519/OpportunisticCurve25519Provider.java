@@ -10,7 +10,7 @@ public class OpportunisticCurve25519Provider implements Curve25519Provider {
 
     private Curve25519Provider delegate;
 
-    OpportunisticCurve25519Provider() {
+    public OpportunisticCurve25519Provider() {
         try {
             delegate = new NativeCurve25519Provider();
         } catch (NoSuchProviderException e) {

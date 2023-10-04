@@ -19,7 +19,7 @@ public class NativeCurve25519Provider implements Curve25519Provider {
         }
     }
 
-    NativeCurve25519Provider() {
+    public NativeCurve25519Provider() {
         if (libraryFailedException != null) throw new NoSuchProviderException(libraryFailedException);
 
         try {
