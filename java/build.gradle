@@ -1,12 +1,14 @@
-apply plugin: 'java'
+plugins {
+    id "java-library"
+    id "maven-publish"
+    id "signing"
+    id "me.champeau.jmh" version "0.7.1"
+}
 
-apply plugin: 'maven'
-apply plugin: 'signing'
-
-sourceCompatibility = 1.7
+sourceCompatibility = 1.8
+group = "com.wavesplatform"
+version = "0.6.6-SNAPSHOT"
 archivesBaseName = "curve25519-java"
-version = version_number
-group = group_info
 
 repositories {
     mavenCentral()
@@ -20,31 +22,15 @@ sourceSets {
     }
 }
 
-buildscript {
-    repositories {
-        jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "me.champeau.gradle:jmh-gradle-plugin:0.5.0-rc-2"
-    }
-}
-
-apply plugin: "me.champeau.gradle.jmh"
-
 jmh {
-    dependencies {
-        compileClasspath 'org.openjdk.jmh:jmh-core:1.4.1'
-    }
     humanOutputFile = null
-    duplicateClassesStrategy = 'exclude'
+    duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
-    compile group: 'net.java.dev.jna', name: 'jna', version: '5.13.0'
-    testCompile project(':tests')
+    implementation 'net.java.dev.jna:jna:5.13.0'
+    testImplementation project(':tests')
+    jmh 'org.openjdk.jmh:jmh-core:1.4.1'
 }
 
 signing {
@@ -52,51 +38,38 @@ signing {
     sign configurations.archives
 }
 
-uploadArchives {
-    configuration = configurations.archives
-    repositories.mavenDeployer {
-        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'curve25519-java'
 
-        repository(url: sonatypeRepo) {
-            authentication(userName: sonatypeUsername, password: sonatypePassword)
-        }
+            from(components.java)
 
-        pom.project {
-            name 'curve25519-java'
-            packaging 'jar'
-            description 'Curve25519 library for Java'
-            url 'https://github.com/WhisperSystems/curve25519-java'
+            pom {
+                description = 'Curve25519 library for Java'
+                url = 'https://github.com/WhisperSystems/curve25519-java'
 
-            scm {
-                url 'scm:git@github.com:WhisperSystems/curve25519-java.git'
-                connection 'scm:git@github.com:WhisperSystems/curve25519-java.git'
-                developerConnection 'scm:git@github.com:WhisperSystems/curve25519-java.git'
-            }
+                scm {
+                    url = 'scm:git@github.com:WhisperSystems/curve25519-java.git'
+                    connection = 'scm:git@github.com:WhisperSystems/curve25519-java.git'
+                    developerConnection = 'scm:git@github.com:WhisperSystems/curve25519-java.git'
+                }
 
-            licenses {
-                license {
-                    name 'GPLv3'
-                    url 'https://www.gnu.org/licenses/gpl-3.0.txt'
-                    distribution 'repo'
+                licenses {
+                    license {
+                        name = 'GPLv3'
+                        url = 'https://www.gnu.org/licenses/gpl-3.0.txt'
+                        distribution = 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        name = 'Trevor Perrin'
+                        name = 'Moxie Marlinspike'
+                    }
                 }
             }
-
-            developers {
-                developer {
-                    name 'Trevor Perrin'
-                    name 'Moxie Marlinspike'
-                }
-            }
-        }
-    }
-}
-
-task installArchives(type: Upload) {
-    description "Installs the artifacts to the local Maven repository."
-    configuration = configurations['archives']
-    repositories {
-        mavenDeployer {
-            repository url: "file://${System.properties['user.home']}/.m2/repository"
         }
     }
 }
@@ -104,12 +77,10 @@ task installArchives(type: Upload) {
 
 task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
     from javadoc.destinationDir
-    classifier = 'javadoc'
 }
 
 task packageSources(type: Jar) {
     from sourceSets.main.allSource
-    classifier = 'sources'
 }
 
 artifacts {

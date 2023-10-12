@@ -5,6 +5,7 @@ on:
      branches: [master]
      tags:
        - v[0-9].[0-9]+.[0-9]+
+   pull_request:
 
 jobs:
   build-native:
@@ -78,8 +79,7 @@ jobs:
       - name: Publish Snapshot
         if: ${{ !contains(github.ref, '/tags/') }}
         run: |
-          ./gradlew uploadArchives \
-            -PsonatypeRepo=https://oss.sonatype.org/content/repositories/snapshots \
+          ./gradlew publishToSonatype \
             -PsonatypeUsername='${{ secrets.OSSRH_USERNAME }}' \
             -PsonatypePassword='${{ secrets.OSSRH_PASSWORD }}' \
             -PgpgKey='${{ secrets.OSSRH_GPG_KEY_ASCII }}' \
@@ -87,8 +87,7 @@ jobs:
       - name: Publish Release
         if: contains(github.ref, '/tags/')
         run: |
-          ./gradlew uploadArchives closeAndReleaseRepository \
-            -PsonatypeRepo=https://oss.sonatype.org/service/local/staging/deploy/maven2 \
+          ./gradlew publishToSonatype closeAndReleaseRepository \
             -PsonatypeUsername='${{ secrets.OSSRH_USERNAME }}' \
             -PsonatypePassword='${{ secrets.OSSRH_PASSWORD }}' \
             -PgpgKey='${{ secrets.OSSRH_GPG_KEY_ASCII }}' \
