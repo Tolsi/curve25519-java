@@ -7,8 +7,7 @@ plugins {
 
 sourceCompatibility = 1.8
 group = "com.wavesplatform"
-version = "0.6.6-SNAPSHOT"
-archivesBaseName = "curve25519-java"
+version = "0.0.0-DO-NOT-USE"
 
 repositories {
     mavenCentral()
