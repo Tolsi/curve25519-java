@@ -79,7 +79,7 @@ jobs:
       - name: Publish Snapshot
         if: ${{ !contains(github.ref, '/tags/') }}
         run: |
-          ./gradlew publishToSonatype \
+          ./gradlew publishToSonatype closeAndReleaseRepository\
             -PsonatypeUsername='${{ secrets.OSSRH_USERNAME }}' \
             -PsonatypePassword='${{ secrets.OSSRH_PASSWORD }}' \
             -PgpgKey='${{ secrets.OSSRH_GPG_KEY_ASCII }}' \
